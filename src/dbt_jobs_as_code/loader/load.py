@@ -38,8 +38,48 @@ def load_job_configuration(config_files: List[str], vars_file: Optional[List[str
             "⚡️ There is some time config under 'schedule > time' in your YML. This data is auto generated and should be deleted. Only cron is supported in the config."
         )
 
-    for identifier, job in config.get("jobs", {}).items():
-        job["identifier"] = identifier
+    from dbt_jobs_as_code.exporter.export import normalize_job_name_for_identifier
+
+    # Use normalized job name as identifier instead of YAML key
+    from dbt_jobs_as_code.exporter.export import normalize_job_name_for_identifier
+
+    # MODIFIED: Rebuild the jobs dictionary using normalized names as keys
+    normalized_jobs = {}
+    yaml_key_mapping = {}  # Track original YAML keys for potential warnings
+    
+    for yaml_key, job in config.get("jobs", {}).items():
+        # Generate identifier from job name
+        normalized_identifier = normalize_job_name_for_identifier(job["name"])
+        
+        # Check for potential identifier collisions
+        if normalized_identifier in normalized_jobs:
+            existing_name = normalized_jobs[normalized_identifier]["name"]
+            logger.error(
+                f"Identifier collision detected! Jobs '{job['name']}' and '{existing_name}' "
+                f"both normalize to identifier '{normalized_identifier}'. "
+                f"Please rename one of the jobs to have a unique normalized name."
+            )
+            raise LoadingJobsYAMLError(
+                f"Duplicate normalized identifier '{normalized_identifier}' for jobs: "
+                f"'{job['name']}' and '{existing_name}'"
+            )
+        
+        # Set the normalized identifier
+        job["identifier"] = normalized_identifier
+        
+        # Store in the new dictionary with normalized key
+        normalized_jobs[normalized_identifier] = job
+        yaml_key_mapping[normalized_identifier] = yaml_key
+        
+        # Warn if YAML key differs significantly from normalized identifier
+        if yaml_key != normalized_identifier:
+            logger.info(
+                f"Job '{job['name']}' (YAML key: '{yaml_key}') will use identifier: '{normalized_identifier}'"
+            )
+
+    # Replace the jobs in config with normalized structure
+    config["jobs"] = normalized_jobs
+
 
     return Config(**config)
 

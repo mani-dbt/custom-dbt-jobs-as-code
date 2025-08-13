@@ -1,10 +1,30 @@
+import re
 from io import StringIO
 from typing import Any, Dict, Optional
 
+from loguru import logger
 from ruamel.yaml import YAML
 
 from dbt_jobs_as_code.schemas.job import JobDefinition
 
+def normalize_job_name_for_identifier(job_name: str) -> str:
+    """Convert job name to a valid identifier format.
+    Returns:
+        Normalized name: lowercase with spaces replaced by underscores
+    """
+    # Convert to lowercase and replace spaces with underscores
+    normalized = job_name.lower().replace(" ", "_")
+    
+    # Replace any non-alphanumeric characters (except underscores) with underscores
+    normalized = re.sub(r'[^a-z0-9_]', '_', normalized)
+    
+    # Remove consecutive underscores
+    normalized = re.sub(r'_+', '_', normalized)
+    
+    # Remove leading/trailing underscores
+    normalized = normalized.strip('_')
+
+    return normalized
 
 def apply_templated_fields(
     job_dict: Dict[Any, Any], template_config: Dict[str, str]
@@ -54,14 +74,44 @@ def export_jobs_yml(
             template_config = yaml.load(content)
 
     export_yml = {"jobs": {}}
+    user_keys = set()
+    duplicate_jobs = []
+
     for id, cloud_job in enumerate(jobs):
-        yaml_key = cloud_job.identifier if cloud_job.identifier else f"import_{id + 1}"
+        base_key = normalize_job_name_for_identifier(cloud_job.name)
+        yaml_key = base_key
+
+        counter = 1
+        while yaml_key in user_keys:
+            yaml_key = f"{base_key}_{counter}"
+            counter += 1
+
+        # Track if we had to add a counter due to duplicate job names
+        if counter > 1:
+            duplicate_jobs.append({
+                'name': cloud_job.name,
+                'identifier': yaml_key,
+                'base_key': base_key
+            })
+
+        user_keys.add(yaml_key)
+
+#        yaml_key = cloud_job.identifier if cloud_job.identifier else f"import_{id + 1}"
+
         job_dict = cloud_job.to_load_format(include_linked_id)
 
         if template_config:
             job_dict = apply_templated_fields(job_dict, template_config)
 
         export_yml["jobs"][yaml_key] = job_dict
+
+    # Check if there were any duplicate job names and raise an error if so
+    if duplicate_jobs:
+        error_message = "❌ Duplicate job names detected. Job names must be unique to avoid identifier conflicts. Please rename jobs to have unique names \n"
+        for dup in duplicate_jobs:
+            error_message += f"  - Job '{dup['name']}' \n"
+        logger.error(error_message.strip())
+        raise ValueError("Duplicate job names detected. Please rename jobs to have unique names.")
 
     print(
         "# yaml-language-server: $schema=https://raw.githubusercontent.com/dbt-labs/dbt-jobs-as-code/main/src/dbt_jobs_as_code/schemas/load_job_schema.json"

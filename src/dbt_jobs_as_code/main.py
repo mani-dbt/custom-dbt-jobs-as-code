@@ -19,7 +19,10 @@ from dbt_jobs_as_code.loader.load import load_job_configuration, resolve_file_pa
 from dbt_jobs_as_code.schemas.config import generate_config_schema
 from dbt_jobs_as_code.schemas.job import filter_jobs_by_import_filter
 
-VERSION = version("dbt-jobs-as-code")
+try:
+    VERSION = version("custom-dbt-jobs-as-code")
+except Exception:
+    VERSION = "unknown"
 
 # adding the ability to disable ssl verification, useful for self-signed certificates and local testing
 option_disable_ssl_verification = click.option(
@@ -50,7 +53,8 @@ option_limit_projects_envs_to_yml = click.option(
     "--limit-projects-envs-to-yml",
     "-l",
     is_flag=True,
-    help="[Flag] Limit sync/plan to the projects and environments listed in the jobs YML file",
+    default=True,
+    help="[Flag] Limit sync/plan to the projects and environments listed in the jobs YML file (default: True)",
 )
 
 option_vars_yml = click.option(
@@ -69,7 +73,7 @@ option_json_output = click.option(
 
 
 @click.group(
-    help=f"dbt-jobs-as-code {VERSION}\n\nA CLI to allow defining dbt Cloud jobs as code",
+    help=f"custom-dbt-jobs-as-code {VERSION}\n\nA CLI to allow defining dbt Cloud jobs as code",
     context_settings={"max_content_width": 120},
 )
 @click.version_option(version=VERSION)

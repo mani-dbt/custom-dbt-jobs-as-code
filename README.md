@@ -1,6 +1,6 @@
 # dbt-jobs-as-code
 
-`dbt-jobs-as-code` is a tool built to handle dbt Cloud Jobs as well-defined YAML files.
+`custom-dbt-jobs-as-code` is a tool built to handle dbt Cloud Jobs as well-defined YAML files.
 
 > [!NOTE]  
 > The documentation is moving to [its dedicated website](https://dbt-labs.github.io/dbt-jobs-as-code/latest/).
@@ -41,9 +41,9 @@ But more than being exclusive from each other, dbt-jobs-as-code and Terraform ca
 ### Installation
 
 - Create a Python virtual environment and activate it
-- Run `pip install dbt-jobs-as-code` (or `pip install dbt-jobs-as-code~=0.9` to install a specific release and its patches)
+- Run `pip install custom-dbt-jobs-as-code` (or `pip install custom-dbt-jobs-as-code~=0.9` to install a specific release and its patches)
 
-The CLI is now available as `dbt-jobs-as-code`
+The CLI is now available as `custom-dbt-jobs-as-code`
 
 ### Pre-requisites
 
@@ -58,7 +58,7 @@ The CLI comes with a few different commands
 
 #### `validate`
 
-Command: `dbt-jobs-as-code validate <config_file_or_pattern.yml>`
+Command: `custom-dbt-jobs-as-code validate <config_file_or_pattern.yml>`
 
 Validates that the YAML file has the correct structure
 
@@ -68,7 +68,7 @@ Validates that the YAML file has the correct structure
 
 #### `plan`
 
-Command: `dbt-jobs-as-code plan <config_file_or_pattern.yml>`
+Command: `custom-dbt-jobs-as-code plan <config_file_or_pattern.yml>`
 
 Returns the list of actions create/update/delete that are required to have dbt Cloud reflecting the configuration file
 
@@ -82,7 +82,7 @@ Returns the list of actions create/update/delete that are required to have dbt C
 
 #### `sync`
 
-Command: `dbt-jobs-as-code sync <config_file_or_pattern.yml>`
+Command: `custom-dbt-jobs-as-code sync <config_file_or_pattern.yml>`
 
 Create/update/delete jobs and env vars overwrites in jobs to align dbt Cloud with the configuration file
 
@@ -96,12 +96,12 @@ Create/update/delete jobs and env vars overwrites in jobs to align dbt Cloud wit
 
 #### `import-jobs`
 
-Command: `dbt-jobs-as-code import-jobs --config <config_file_or_pattern.yml>` or `dbt-jobs-as-code import-jobs --account-id <account-id>`
+Command: `custom-dbt-jobs-as-code import-jobs --config <config_file_or_pattern.yml>` or `dbt-jobs-as-code import-jobs --account-id <account-id>`
 
 Queries dbt Cloud and provide the YAML definition for those jobs. It includes the env var overwrite at the job level if some have been defined
 
 - it is possible to restrict the list of dbt Cloud Job IDs by adding `... -j 101 -j 123 -j 234`
-- this command also accepts a list of project IDs or environments IDs to limit the command for: `dbt-jobs-as-code sync <config_file_or_pattern.yml> -p 1234 -p 2345 -e 4567 -e 5678`
+- this command also accepts a list of project IDs or environments IDs to limit the command for: `custom-dbt-jobs-as-code sync <config_file_or_pattern.yml> -p 1234 -p 2345 -e 4567 -e 5678`
 - this command accepts a `--include-linked-id` parameter to allow linking the jobs in the YAML to existing jobs in dbt Cloud, by renaming those
 - once the YAML has been retrieved, it is possible to copy/paste it in a local YAML file to create/update the local jobs definition.
 
@@ -109,18 +109,18 @@ Once the configuration is imported, it is possible to "link" existing jobs by us
 
 #### `link`
 
-Command: `dbt-jobs-as-code link <config_file_or_pattern.yml>`
+Command: `custom-dbt-jobs-as-code link <config_file_or_pattern.yml>`
 
 Links dbt Cloud jobs with the corresponding identifier from the YAML file by renaming the jobs, adding the `[[ ... ]]` part in the job name.
 
 To do so, the program looks at the YAML file for the config `linked_id`.
-`linked_id` can be added manually or can be added automatically when calling `dbt-jobs-as-code import-jobs` with the `--include-linked-id` parameter.
+`linked_id` can be added manually or can be added automatically when calling `custom-dbt-jobs-as-code import-jobs` with the `--include-linked-id` parameter.
 
 Accepts a `--dry-run` flag to see what jobs would be changed, without actually changing them.
 
 #### `unlink`
 
-Command: `dbt-jobs-as-code unlink --config <config_file_or_pattern.yml>` or `dbt-jobs-as-code unlink --account-id <account-id>`
+Command: `dbt-jobs-as-code unlink --config <config_file_or_pattern.yml>` or `custom-dbt-jobs-as-code unlink --account-id <account-id>`
 
 Unlinking jobs removes the `[[ ... ]]` part of the job name in dbt Cloud.
 
@@ -130,7 +130,7 @@ Unlinking jobs removes the `[[ ... ]]` part of the job name in dbt Cloud.
 
 #### `deactivate-jobs`
 
-Command: `dbt-jobs-as-code deactivate-jobs --account-id 1234 --job-id 12 --job-id 34 --job-id 56`
+Command: `custom-dbt-jobs-as-code deactivate-jobs --account-id 1234 --job-id 12 --job-id 34 --job-id 56`
 
 This command can be used to deactivate both the schedule and the CI triggers for dbt Cloud jobs. This can be useful when moving jobs from one project to another. When the new jobs have been created, this command can be used to deactivate the jobs from the old project.
 
@@ -167,8 +167,8 @@ When using templates, you might also want to use the flag `--limit-projects-envs
 
 Templating also allows people to version control those YAML files and to have different files for different development layers, like:
 
-- `dbt-jobs-as-code jobs.yml --vars-yml vars_qa.yml --limit-projects-envs-to-yml` for QA
-- `dbt-jobs-as-code jobs.yml --vars-yml vars_prod.yml --limit-projects-envs-to-yml` for Prod
+- `custom-dbt-jobs-as-code jobs.yml --vars-yml vars_qa.yml --limit-projects-envs-to-yml` for QA
+- `custom-dbt-jobs-as-code jobs.yml --vars-yml vars_prod.yml --limit-projects-envs-to-yml` for Prod
 
 The tool will raise errors if:
 

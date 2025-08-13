@@ -68,7 +68,7 @@ class JobDefinition(BaseModel):
     id: Optional[int] = None
     identifier: Optional[str] = Field(
         default=None,
-        description="The internal job identifier for the job for dbt-jobs-as-code. Will be added at the end of the job name.",
+        description="The internal job identifier for the job for dbt-jobs-as-code. Using normalized job name for this identifier.",
     )
     _filter_import: Optional[str] = None
     account_id: int = field_mandatory_int_allowed_as_string_in_schema
@@ -117,13 +117,12 @@ class JobDefinition(BaseModel):
     )
 
     def __init__(self, **data: Any):
-        # Check if `name` includes an identifier. If yes, set the identifier in the object. Remove the identifier from
-        # the name.
-        identifier_info = self._extract_identifier_from_name(data["name"])
-        _filter_import = identifier_info.import_filter
-        if identifier_info.identifier:
-            data["identifier"] = identifier_info.identifier
-            data["name"] = data["name"].replace(f" [[{identifier_info.raw_identifier}]]", "")
+
+        #import here to avoid circular import
+        from dbt_jobs_as_code.exporter.export import normalize_job_name_for_identifier
+
+        # always use the normalized job name for the identifier
+        data["identifier"] = normalize_job_name_for_identifier(data["name"])
 
         # Rewrite custom environment variables to include account and project id
         environment_variables = data.get("custom_environment_variables", None)
@@ -141,7 +140,7 @@ class JobDefinition(BaseModel):
             data["custom_environment_variables"] = []
 
         super().__init__(**data)
-        self._filter_import = _filter_import
+
 
     @staticmethod
     def _extract_identifier_from_name(name: str) -> IdentifierInfo:
@@ -178,12 +177,8 @@ class JobDefinition(BaseModel):
     def to_payload(self):
         """Create a dbt Cloud API payload for a JobDefinition."""
 
-        # Rewrite the job name to embed the job ID from job.yml
+        # Do not modify the job name
         payload = self.model_copy()
-        # if there is an identifier, add it to the name
-        # otherwise, it means that we are "unlinking" the job from the job.yml
-        if self.identifier:
-            payload.name = f"{self.name} [[{self.identifier}]]"
         return payload.model_dump_json(
             exclude={"linked_id", "identifier", "custom_environment_variables"}
         )

@@ -19,9 +19,9 @@ dependencies = [
     "jinja2>=3.1.5,<4.0.0",
     "importlib-metadata<7,>=6.0",
 ]
-name = "dbt-jobs-as-code"
+name = "custom-dbt-jobs-as-code"
 dynamic = ["version"]
-description = "A CLI to allow defining dbt Cloud jobs as code"
+description = "Custom dbt jobs as code CLI - for specific requirements"
 readme = "README.md"
 keywords = [
     "dbt",
@@ -29,10 +29,10 @@ keywords = [
 ]
 
 [project.urls]
-repository = "https://github.com/dbt-labs/dbt-jobs-as-code.git"
+repository = "https://github.com/mani-dbt/custom-dbt-jobs-as-code"
 
 [project.scripts]
-dbt-jobs-as-code = "dbt_jobs_as_code.main:cli"
+custom-dbt-jobs-as-code = "dbt_jobs_as_code.main:cli"
 
 [dependency-groups]
 dev = [
