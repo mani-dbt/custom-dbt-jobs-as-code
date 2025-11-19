@@ -13,7 +13,7 @@ from dbt_jobs_as_code.schemas.custom_environment_variable import (
 from dbt_jobs_as_code.schemas.job import JobDefinition, JobMissingFields
 
 if os.getenv("DBT_JOB_ID", "") == "":
-    VERSION = f"v{version('dbt-jobs-as-code')}"
+    VERSION = f"v{version('custom-dbt-jobs-as-code')}"
 else:
     VERSION = "dev"
 
