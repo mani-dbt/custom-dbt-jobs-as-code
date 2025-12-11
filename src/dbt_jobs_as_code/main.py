@@ -50,11 +50,10 @@ option_environment_ids = click.option(
 )
 
 option_limit_projects_envs_to_yml = click.option(
-    "--limit-projects-envs-to-yml",
-    "-l",
-    is_flag=True,
+    "--limit-projects-envs-to-yml/--no-limit-projects-envs-to-yml",
+    "-l/-nl",
     default=True,
-    help="[Flag] Limit sync/plan to the projects and environments listed in the jobs YML file (default: True)",
+    help="Limit sync/plan to the projects and environments listed in the jobs YML file (default: True)",
 )
 
 option_vars_yml = click.option(
@@ -69,6 +68,12 @@ option_json_output = click.option(
     "output_json",
     is_flag=True,
     help="Output results in JSON format instead of human-readable text.",
+)
+
+option_exclude_identifiers_matching = click.option(
+    "--exclude-identifiers-matching",
+    type=str,
+    help="Exclude jobs from dbt Cloud if their identifiers match this regex pattern.",
 )
 
 
@@ -89,6 +94,12 @@ def cli() -> None:
 @option_environment_ids
 @option_limit_projects_envs_to_yml
 @option_json_output
+@option_exclude_identifiers_matching
+@click.option(
+    "--fail-fast",
+    is_flag=True,
+    help="Stop subsequent operations if any step fails during sync.",
+)
 def sync(
     config: str,
     vars_yml,
@@ -97,6 +108,8 @@ def sync(
     limit_projects_envs_to_yml,
     disable_ssl_verification,
     output_json: bool,
+    exclude_identifiers_matching: str,
+    fail_fast: bool,
 ):
     """Synchronize a dbt Cloud job config file against dbt Cloud.
     This command will update dbt Cloud with the changes in the local YML file. It is recommended to run a `plan` first to see what will be changed.
@@ -108,7 +121,7 @@ def sync(
 
     if limit_projects_envs_to_yml and (project_id or environment_id):
         logger.error(
-            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please remove the --limit-projects-envs-to-yml flag."
+            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please use --no-limit-projects-envs-to-yml if you want to specify projects/environments manually."
         )
         sys.exit(1)
 
@@ -126,6 +139,7 @@ def sync(
         cloud_project_ids,
         cloud_environment_ids,
         limit_projects_envs_to_yml,
+        exclude_identifiers_matching,
         output_json=output_json,
     )
     if len(change_set) == 0:
@@ -140,7 +154,7 @@ def sync(
             logger.info("-- SYNC -- {count} changes detected.", count=len(change_set))
             console = Console()
             console.log(change_set.to_table())
-    change_set.apply()
+    change_set.apply(fail_fast=fail_fast)
 
     if not change_set.apply_success:
         logger.error("-- SYNC -- There were some errors during the sync. Check the logs.")
@@ -155,6 +169,7 @@ def sync(
 @option_environment_ids
 @option_limit_projects_envs_to_yml
 @option_json_output
+@option_exclude_identifiers_matching
 def plan(
     config: str,
     vars_yml: str,
@@ -163,6 +178,7 @@ def plan(
     limit_projects_envs_to_yml: bool,
     disable_ssl_verification: bool,
     output_json: bool,
+    exclude_identifiers_matching: str,
 ):
     """Check the difference between a local file and dbt Cloud without updating dbt Cloud.
     This command will not update dbt Cloud.
@@ -174,7 +190,7 @@ def plan(
 
     if limit_projects_envs_to_yml and (project_id or environment_id):
         logger.error(
-            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please remove the --limit-projects-envs-to-yml flag."
+            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please use --no-limit-projects-envs-to-yml if you want to specify projects/environments manually."
         )
         sys.exit(1)
 
@@ -191,6 +207,7 @@ def plan(
         cloud_project_ids,
         cloud_environment_ids,
         limit_projects_envs_to_yml,
+        exclude_identifiers_matching,
         output_json=output_json,
     )
     if len(change_set) == 0:
