@@ -50,11 +50,10 @@ option_environment_ids = click.option(
 )
 
 option_limit_projects_envs_to_yml = click.option(
-    "--limit-projects-envs-to-yml",
-    "-l",
-    is_flag=True,
+    "--limit-projects-envs-to-yml/--no-limit-projects-envs-to-yml",
+    "-l/-nl",
     default=True,
-    help="[Flag] Limit sync/plan to the projects and environments listed in the jobs YML file (default: True)",
+    help="Limit sync/plan to the projects and environments listed in the jobs YML file (default: True)",
 )
 
 option_vars_yml = click.option(
