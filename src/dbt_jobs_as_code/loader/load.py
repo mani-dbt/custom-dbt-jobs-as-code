@@ -41,8 +41,6 @@ def load_job_configuration(config_files: List[str], vars_file: Optional[List[str
             "⚡️ There is some time config under 'schedule > time' in your YML. This data is auto generated and should be deleted. Only cron is supported in the config."
         )
 
-    from dbt_jobs_as_code.exporter.export import normalize_job_name_for_identifier
-
     # Use normalized job name as identifier instead of YAML key
     from dbt_jobs_as_code.exporter.export import normalize_job_name_for_identifier
 

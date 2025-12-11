@@ -121,7 +121,7 @@ def sync(
 
     if limit_projects_envs_to_yml and (project_id or environment_id):
         logger.error(
-            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please remove the --limit-projects-envs-to-yml flag."
+            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please use --no-limit-projects-envs-to-yml if you want to specify projects/environments manually."
         )
         sys.exit(1)
 
@@ -190,7 +190,7 @@ def plan(
 
     if limit_projects_envs_to_yml and (project_id or environment_id):
         logger.error(
-            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please remove the --limit-projects-envs-to-yml flag."
+            "You cannot use --limit-projects-envs-to-yml with --project-id or --environment-id. Please use --no-limit-projects-envs-to-yml if you want to specify projects/environments manually."
         )
         sys.exit(1)
 
