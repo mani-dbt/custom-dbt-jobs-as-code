@@ -125,8 +125,9 @@ def test_import_jobs_managed_only(mock_dbt_cloud):
     assert result.exit_code == 0
 
     # Check that managed jobs are in the output
-    assert "managed-job-1" in result.stdout
-    assert "managed-job-2" in result.stdout
+    # Custom normalization converts job names to use underscores
+    assert "managed_job_1" in result.stdout
+    assert "managed_job_2" in result.stdout
 
     # Check that unmanaged job is not in the output
     assert "Unmanaged Job" not in result.stdout
@@ -148,8 +149,9 @@ def test_import_jobs_without_managed_only(mock_dbt_cloud):
     assert result.exit_code == 0
 
     # Check that all jobs are in the output
-    assert "managed-job-1" in result.stdout
-    assert "managed-job-2" in result.stdout
+    # Custom normalization converts job names to use underscores
+    assert "managed_job_1" in result.stdout
+    assert "managed_job_2" in result.stdout
     assert "Unmanaged Job" in result.stdout
 
 
